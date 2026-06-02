@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { CheckCircle, Package, Home } from 'lucide-react'
 import axios from 'axios'
 
-const API = 'http://localhost:5000'
+const API = 'https://shopnova-server.vercel.app'
 
 export default function OrderSuccess() {
   const { id } = useParams()

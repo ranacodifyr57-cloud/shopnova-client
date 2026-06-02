@@ -4,7 +4,7 @@ import { Package, ShoppingBag, Users, Plus, Trash2, LogOut, Eye, X } from 'lucid
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 
-const API = 'http://localhost:5000'
+const API = 'https://shopnova-server.vercel.app'
 
 export default function Admin() {
   const [tab, setTab] = useState('orders')

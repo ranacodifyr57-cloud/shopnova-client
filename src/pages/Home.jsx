@@ -4,7 +4,7 @@ import { ArrowRight, ShoppingBag, Truck, Shield, RefreshCw } from 'lucide-react'
 import axios from 'axios'
 import ProductCard from '../components/ProductCard'
 
-const API = 'http://localhost:5000'
+const API = 'https://shopnova-server.vercel.app'
 
 const categories = [
   { name: 'Electronics', emoji: '📱', color: '#1a56db' },

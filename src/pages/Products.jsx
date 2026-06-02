@@ -4,7 +4,7 @@ import { SlidersHorizontal, X } from 'lucide-react'
 import axios from 'axios'
 import ProductCard from '../components/ProductCard'
 
-const API = 'http://localhost:5000'
+const API = 'https://shopnova-server.vercel.app'
 
 const categories = ['All', 'Electronics', 'Clothing', 'Home & Living', 'Beauty', 'Sports', 'Books']
 

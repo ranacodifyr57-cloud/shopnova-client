@@ -4,7 +4,7 @@ import { ShoppingCart, ArrowLeft, Star, Truck, Shield, Plus, Minus } from 'lucid
 import axios from 'axios'
 import { useCart } from '../context/CartContext'
 
-const API = 'http://localhost:5000'
+const API = 'https://shopnova-server.vercel.app'
 
 export default function ProductDetail() {
   const { id } = useParams()

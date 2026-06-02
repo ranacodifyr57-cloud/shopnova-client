@@ -4,7 +4,7 @@ import { Package } from 'lucide-react'
 import axios from 'axios'
 import { useCart } from '../context/CartContext'
 
-const API = 'http://localhost:5000'
+const API = 'https://shopnova-server.vercel.app'
 
 export default function Checkout() {
   const { cart, totalPrice, clearCart } = useCart()

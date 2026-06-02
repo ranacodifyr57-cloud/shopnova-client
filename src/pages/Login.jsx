@@ -4,7 +4,7 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 
-const API = 'http://localhost:5000'
+const API = 'https://shopnova-server.vercel.app'
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
