@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Package, ShoppingBag, Users, Plus, Trash2, LogOut, Eye, X } from 'lucide-react'
+import { Package, ShoppingBag, Users, Plus, Trash2, Pencil, LogOut, Eye, X } from 'lucide-react'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 
 const API = 'https://shopnova-server.vercel.app'
+
+const emptyProduct = { name: '', description: '', price: '', oldPrice: '', category: '', stock: '', images: '', featured: false }
 
 export default function Admin() {
   const [tab, setTab] = useState('orders')
   const [orders, setOrders] = useState([])
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showAddProduct, setShowAddProduct] = useState(false)
+  const [showProductModal, setShowProductModal] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [selectedOrder, setSelectedOrder] = useState(null)
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '', oldPrice: '', category: '', stock: '', images: '', featured: false })
+  const [newProduct, setNewProduct] = useState(emptyProduct)
   const { token, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
   const headers = { Authorization: `Bearer ${token}` }
@@ -31,6 +34,7 @@ export default function Admin() {
   }, [])
 
   const deleteProduct = async id => {
+    if (!confirm('Delete this product?')) return
     await axios.delete(`${API}/api/products/${id}`, { headers })
     setProducts(products.filter(p => p._id !== id))
   }
@@ -40,7 +44,37 @@ export default function Admin() {
     setOrders(orders.map(o => o._id === id ? { ...o, status } : o))
   }
 
-  const addProduct = async e => {
+  // Open the modal in ADD mode
+  const openAdd = () => {
+    setEditingId(null)
+    setNewProduct(emptyProduct)
+    setShowProductModal(true)
+  }
+
+  // Open the modal in EDIT mode, pre-filled with the product's current values
+  const openEdit = p => {
+    setEditingId(p._id)
+    setNewProduct({
+      name: p.name || '',
+      description: p.description || '',
+      price: p.price ?? '',
+      oldPrice: p.oldPrice ?? '',
+      category: p.category || '',
+      stock: p.stock ?? '',
+      images: p.images?.[0] || '',
+      featured: p.featured || false,
+    })
+    setShowProductModal(true)
+  }
+
+  const closeModal = () => {
+    setShowProductModal(false)
+    setEditingId(null)
+    setNewProduct(emptyProduct)
+  }
+
+  // Handles BOTH adding (POST) and editing (PUT)
+  const saveProduct = async e => {
     e.preventDefault()
     try {
       const productData = {
@@ -50,12 +84,16 @@ export default function Admin() {
         stock: Number(newProduct.stock),
         images: newProduct.images ? [newProduct.images] : [],
       }
-      const { data } = await axios.post(`${API}/api/products`, productData, { headers })
-      setProducts([data, ...products])
-      setShowAddProduct(false)
-      setNewProduct({ name: '', description: '', price: '', oldPrice: '', category: '', stock: '', images: '', featured: false })
+      if (editingId) {
+        const { data } = await axios.put(`${API}/api/products/${editingId}`, productData, { headers })
+        setProducts(products.map(p => p._id === editingId ? data : p))
+      } else {
+        const { data } = await axios.post(`${API}/api/products`, productData, { headers })
+        setProducts([data, ...products])
+      }
+      closeModal()
     } catch (err) {
-      alert('Error adding product: ' + err.message)
+      alert('Error saving product: ' + err.message)
     }
   }
 
@@ -162,20 +200,20 @@ export default function Admin() {
         {tab === 'products' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <button onClick={() => setShowAddProduct(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer' }}>
+              <button onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer' }}>
                 <Plus size={16} /> Add Product
               </button>
             </div>
 
-            {/* Add Product Modal */}
-            {showAddProduct && (
+            {/* Add / Edit Product Modal */}
+            {showProductModal && (
               <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
                 <div style={{ background: '#fff', borderRadius: 24, padding: 32, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                    <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 800 }}>Add New Product</h2>
-                    <button onClick={() => setShowAddProduct(false)} style={{ padding: 8, borderRadius: 8, background: 'var(--bg2)', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
+                    <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 800 }}>{editingId ? 'Edit Product' : 'Add New Product'}</h2>
+                    <button onClick={closeModal} style={{ padding: 8, borderRadius: 8, background: 'var(--bg2)', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
                   </div>
-                  <form onSubmit={addProduct}>
+                  <form onSubmit={saveProduct}>
                     {[
                       { name: 'name', label: 'Product Name *', placeholder: 'Samsung Galaxy S24' },
                       { name: 'description', label: 'Description *', placeholder: 'Product description...' },
@@ -205,7 +243,7 @@ export default function Admin() {
                       <label htmlFor="featured" style={{ fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Mark as Featured Product</label>
                     </div>
                     <button type="submit" style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-                      Add Product
+                      {editingId ? 'Save Changes' : 'Add Product'}
                     </button>
                   </form>
                 </div>
@@ -229,9 +267,12 @@ export default function Admin() {
                       <h3 style={{ fontFamily: 'var(--font-head)', fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>{p.name}</h3>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontFamily: 'var(--font-head)', fontSize: 16, fontWeight: 800, color: 'var(--accent)' }}>Rs. {p.price?.toLocaleString()}</span>
-                        <div style={{ display: 'flex', gap: 6 }}>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                           <span style={{ padding: '3px 8px', borderRadius: 6, background: 'var(--bg2)', fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>Stock: {p.stock}</span>
-                          <button onClick={() => deleteProduct(p._id)} style={{ padding: '4px 8px', borderRadius: 6, background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer' }}>
+                          <button onClick={() => openEdit(p)} style={{ padding: '4px 8px', borderRadius: 6, background: '#eff6ff', color: '#2563eb', border: 'none', cursor: 'pointer' }} title="Edit">
+                            <Pencil size={14} />
+                          </button>
+                          <button onClick={() => deleteProduct(p._id)} style={{ padding: '4px 8px', borderRadius: 6, background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer' }} title="Delete">
                             <Trash2 size={14} />
                           </button>
                         </div>
