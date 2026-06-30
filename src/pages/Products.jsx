@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom'
 import { SlidersHorizontal, X } from 'lucide-react'
 import axios from 'axios'
 import ProductCard from '../components/ProductCard'
+import Reveal from '../components/Reveal'
+import { filterDummy } from '../data/products'
 
 const API = 'https://shopnova-server.vercel.app'
 
@@ -28,8 +30,11 @@ export default function Products() {
     if (sort === 'popular') url += 'sort=popular'
 
     axios.get(url)
-      .then(r => setProducts(Array.isArray(r.data) ? r.data : []))
-      .catch(() => setProducts([]))
+      .then(r => {
+        const list = Array.isArray(r.data) ? r.data : []
+        setProducts(list.length ? list : filterDummy({ category, search, sort }))
+      })
+      .catch(() => setProducts(filterDummy({ category, search, sort })))
       .finally(() => setLoading(false))
   }, [category, search, sort])
 
@@ -39,13 +44,13 @@ export default function Products() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 800, color: 'var(--text)' }}>
-              {search ? `Search: "${search}"` : category === 'All' ? 'All Products' : category}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: 'var(--text)' }}>
+              {search ? <>Search: <span className="gradient-text">"{search}"</span></> : category === 'All' ? 'All Products' : <span className="gradient-text">{category}</span>}
             </h1>
             <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>{products.length} products found</p>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <select value={sort} onChange={e => setSort(e.target.value)} style={{ padding: '10px 16px', borderRadius: 10, border: '1px solid var(--border)', fontSize: 14, background: '#fff', color: 'var(--text)' }}>
+            <select value={sort} onChange={e => setSort(e.target.value)} className="glass" style={{ padding: '11px 16px', borderRadius: 12, fontSize: 14, color: 'var(--text)', cursor: 'pointer' }}>
               <option value="newest">Newest First</option>
               <option value="price_low">Price: Low to High</option>
               <option value="price_high">Price: High to Low</option>
@@ -57,19 +62,22 @@ export default function Products() {
         <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 32 }}>
           {/* Sidebar */}
           <div>
-            <div style={{ padding: 24, borderRadius: 16, border: '1px solid var(--border)', background: '#fff', position: 'sticky', top: 24 }}>
+            <div className="glass" style={{ padding: 24, borderRadius: 18, position: 'sticky', top: 96 }}>
               <h3 style={{ fontFamily: 'var(--font-head)', fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Categories</h3>
-              {categories.map(c => (
+              {categories.map(c => {
+                const active = category === c || (c === 'All' && !searchParams.get('category'))
+                return (
                 <button key={c} onClick={() => setSearchParams(c === 'All' ? {} : { category: c })} style={{
                   display: 'block', width: '100%', textAlign: 'left',
                   padding: '10px 14px', borderRadius: 10, marginBottom: 4,
-                  background: category === c || (c === 'All' && !searchParams.get('category')) ? 'var(--accent-light)' : 'transparent',
-                  color: category === c || (c === 'All' && !searchParams.get('category')) ? 'var(--accent)' : 'var(--text2)',
-                  fontWeight: category === c ? 700 : 500,
-                  fontSize: 14, border: 'none', cursor: 'pointer',
+                  background: active ? 'var(--accent-light)' : 'transparent',
+                  color: active ? 'var(--accent)' : 'var(--text2)',
+                  border: active ? '1px solid rgba(255,122,26,0.3)' : '1px solid transparent',
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 14, cursor: 'pointer',
                   transition: 'var(--transition)',
                 }}>{c}</button>
-              ))}
+              )})}
             </div>
           </div>
 
@@ -87,7 +95,7 @@ export default function Products() {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
-                {products.map(p => <ProductCard key={p._id} product={p} />)}
+                {products.map((p, i) => <Reveal key={p._id} delay={(i % 4) * 70}><ProductCard product={p} /></Reveal>)}
               </div>
             )}
           </div>

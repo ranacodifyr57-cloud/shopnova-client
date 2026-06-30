@@ -37,8 +37,8 @@ export default function Checkout() {
 
   const inputStyle = {
     width: '100%', padding: '12px 14px',
-    borderRadius: 10, border: '1.5px solid var(--border)',
-    fontSize: 14, background: '#fff', color: 'var(--text)',
+    borderRadius: 12, border: '1px solid var(--border)',
+    fontSize: 14, background: 'var(--surface)', color: 'var(--text)',
     transition: 'var(--transition)',
   }
 
@@ -50,12 +50,12 @@ export default function Checkout() {
   return (
     <main style={{ padding: '40px 24px', minHeight: '80vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <h1 style={{ fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 800, marginBottom: 32 }}>Checkout</h1>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, marginBottom: 32 }}>Check<span className="gradient-text">out</span></h1>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'start' }}>
           {/* Form */}
           <form onSubmit={submit}>
-            <div style={{ padding: 28, borderRadius: 20, border: '1px solid var(--border)', background: '#fff', boxShadow: 'var(--shadow)', marginBottom: 20 }}>
+            <div className="glass" style={{ padding: 28, borderRadius: 22, boxShadow: 'var(--shadow)', marginBottom: 20 }}>
               <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 800, marginBottom: 20 }}>Delivery Information</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                 <div>
@@ -100,9 +100,9 @@ export default function Checkout() {
             </div>
 
             {/* Payment */}
-            <div style={{ padding: 28, borderRadius: 20, border: '1px solid var(--border)', background: '#fff', boxShadow: 'var(--shadow)' }}>
+            <div className="glass" style={{ padding: 28, borderRadius: 22, boxShadow: 'var(--shadow)' }}>
               <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 800, marginBottom: 20 }}>Payment Method</h2>
-              <div style={{ padding: 16, borderRadius: 12, border: '2px solid var(--accent)', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ padding: 16, borderRadius: 14, border: '1px solid rgba(255,122,26,0.45)', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <Package size={20} color="var(--accent)" />
                 <div>
                   <p style={{ fontWeight: 700, color: 'var(--text)', fontSize: 15 }}>Cash on Delivery</p>
@@ -114,20 +114,21 @@ export default function Checkout() {
             <button type="submit" disabled={loading} style={{
               width: '100%', padding: '16px', marginTop: 20,
               borderRadius: 14, border: 'none',
-              background: loading ? '#fdba74' : 'var(--accent)',
+              background: 'var(--aurora)', opacity: loading ? 0.6 : 1,
               color: '#fff', fontWeight: 700, fontSize: 16,
               cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: 'var(--glow)',
             }}>
               {loading ? 'Placing Order...' : `Place Order — Rs. ${total.toLocaleString()}`}
             </button>
           </form>
 
           {/* Order Summary */}
-          <div style={{ padding: 28, borderRadius: 20, border: '1px solid var(--border)', background: '#fff', boxShadow: 'var(--shadow)', position: 'sticky', top: 24 }}>
+          <div className="glass" style={{ padding: 28, borderRadius: 22, boxShadow: 'var(--shadow)', position: 'sticky', top: 96 }}>
             <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 800, marginBottom: 20 }}>Order Summary</h2>
             {cart.map(item => (
               <div key={item._id} style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
-                <div style={{ width: 50, height: 50, borderRadius: 8, overflow: 'hidden', background: 'var(--bg2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 50, height: 50, borderRadius: 10, overflow: 'hidden', background: 'var(--bg2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {item.images?.[0] ? <img src={item.images[0]} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span>📦</span>}
                 </div>
                 <div style={{ flex: 1 }}>
@@ -143,11 +144,11 @@ export default function Checkout() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, fontSize: 14, color: 'var(--text2)' }}>
                 <span>Delivery</span>
-                <span style={{ color: delivery === 0 ? '#16a34a' : 'var(--text)' }}>{delivery === 0 ? 'FREE' : `Rs. ${delivery}`}</span>
+                <span style={{ color: delivery === 0 ? '#34d399' : 'var(--text)' }}>{delivery === 0 ? 'FREE' : `Rs. ${delivery}`}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 800 }}>
                 <span>Total</span>
-                <span style={{ color: 'var(--accent)' }}>Rs. {total.toLocaleString()}</span>
+                <span className="gradient-text">Rs. {total.toLocaleString()}</span>
               </div>
             </div>
           </div>

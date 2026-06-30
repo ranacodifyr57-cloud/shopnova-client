@@ -6,15 +6,13 @@ export default function ProductCard({ product }) {
   const { addToCart } = useCart()
 
   return (
-    <div style={{
-      borderRadius: 16, overflow: 'hidden',
-      border: '1px solid var(--border)',
-      background: '#fff',
+    <div className="glass" style={{
+      borderRadius: 18, overflow: 'hidden',
       boxShadow: 'var(--shadow)',
       transition: 'var(--transition)',
     }}
-    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)' }}
-    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow)' }}
+    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = 'var(--glow)'; e.currentTarget.style.borderColor = 'rgba(255,122,26,0.4)' }}
+    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow)'; e.currentTarget.style.borderColor = 'var(--border)' }}
     >
       {/* Image */}
       <Link to={`/products/${product._id}`}>
@@ -25,7 +23,7 @@ export default function ProductCard({ product }) {
             <div style={{ fontSize: 48 }}>📦</div>
           )}
           {product.oldPrice && (
-            <div style={{ position: 'absolute', top: 10, left: 10, padding: '3px 8px', borderRadius: 6, background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 700 }}>
+            <div style={{ position: 'absolute', top: 10, left: 10, padding: '4px 9px', borderRadius: 8, background: 'var(--aurora)', color: '#fff', fontSize: 11, fontWeight: 700, boxShadow: 'var(--glow-pink)' }}>
               {Math.round((1 - product.price / product.oldPrice) * 100)}% OFF
             </div>
           )}
@@ -52,18 +50,19 @@ export default function ProductCard({ product }) {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <span style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>Rs. {product.price?.toLocaleString()}</span>
+            <span className="gradient-text" style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 800 }}>Rs. {product.price?.toLocaleString()}</span>
             {product.oldPrice && <span style={{ fontSize: 13, color: 'var(--text2)', textDecoration: 'line-through', marginLeft: 6 }}>Rs. {product.oldPrice?.toLocaleString()}</span>}
           </div>
           <button
             onClick={() => addToCart(product)}
             disabled={product.stock === 0}
             style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: product.stock === 0 ? 'var(--bg3)' : 'var(--accent)',
+              width: 38, height: 38, borderRadius: 12,
+              background: product.stock === 0 ? 'var(--surface-2)' : 'var(--aurora)',
               color: product.stock === 0 ? 'var(--text2)' : '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: 'none', cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
+              boxShadow: product.stock === 0 ? 'none' : 'var(--glow)',
               transition: 'var(--transition)',
             }}
           >

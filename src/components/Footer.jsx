@@ -4,17 +4,18 @@ import { Mail, Phone, MapPin } from 'lucide-react'
 export default function Footer() {
   const year = new Date().getFullYear()
   return (
-    <footer style={{ background: '#0f172a', padding: '60px 24px 32px' }}>
+    <footer style={{ position: 'relative', background: 'linear-gradient(180deg, rgba(13,13,28,0.6), rgba(6,6,17,0.95))', borderTop: '1px solid var(--border)', padding: '60px 24px 32px' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--aurora)', opacity: 0.8 }} />
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 40 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, background: 'var(--accent)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 38, height: 38, background: 'var(--aurora)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--glow)' }}>
                 <span style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 18, color: '#fff' }}>S</span>
               </div>
-              <span style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 20, color: '#fff' }}>Shop<span style={{ color: 'var(--accent)' }}>Nova</span></span>
+              <span style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 20, color: '#fff' }}>Shop<span className="gradient-text">Nova</span></span>
             </div>
-            <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.7 }}>Your one-stop shop for everything. Quality products, best prices, fast delivery.</p>
+            <p style={{ color: 'var(--text2)', fontSize: 14, lineHeight: 1.7 }}>Your one-stop shop for everything. Quality products, best prices, fast delivery.</p>
           </div>
 
           <div>
