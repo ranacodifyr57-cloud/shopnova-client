@@ -31,8 +31,19 @@ export default function Products() {
 
     axios.get(url)
       .then(r => {
-        const list = Array.isArray(r.data) ? r.data : []
-        setProducts(list.length ? list : filterDummy({ category, search, sort }))
+        let list = Array.isArray(r.data) ? r.data : []
+        if (!list.length) {
+          list = filterDummy({ category, search, sort })
+        } else if (search) {
+          // Always narrow client-side so partial name matches show reliably
+          const term = search.toLowerCase()
+          list = list.filter(p =>
+            (p.name || '').toLowerCase().includes(term) ||
+            (p.category || '').toLowerCase().includes(term) ||
+            (p.description || '').toLowerCase().includes(term)
+          )
+        }
+        setProducts(list)
       })
       .catch(() => setProducts(filterDummy({ category, search, sort })))
       .finally(() => setLoading(false))

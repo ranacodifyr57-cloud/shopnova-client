@@ -1,11 +1,51 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ShoppingCart, ArrowLeft, Star, Truck, Shield, Plus, Minus } from 'lucide-react'
+import { ShoppingCart, ArrowLeft, Star, Truck, Shield, Plus, Minus, Ruler, X } from 'lucide-react'
 import axios from 'axios'
 import { useCart } from '../context/CartContext'
 import { findDummy } from '../data/products'
 
 const API = 'https://shopnova-server.vercel.app'
+
+// --- Sizing config (applied to every product) ---
+const APPAREL = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+const FOOTWEAR = ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11']
+
+const APPAREL_CHART = {
+  head: ['Size', 'Chest (in)', 'Waist (in)', 'Length (in)'],
+  rows: [
+    ['XS', '34', '28', '26'],
+    ['S', '36', '30', '27'],
+    ['M', '38', '32', '28'],
+    ['L', '40', '34', '29'],
+    ['XL', '42', '36', '30'],
+    ['XXL', '44', '38', '31'],
+  ],
+}
+const FOOTWEAR_CHART = {
+  head: ['UK', 'EU', 'US', 'Foot (cm)'],
+  rows: [
+    ['UK 6', '39', '7', '24.5'],
+    ['UK 7', '40', '8', '25.5'],
+    ['UK 8', '42', '9', '26.5'],
+    ['UK 9', '43', '10', '27.5'],
+    ['UK 10', '44', '11', '28.5'],
+    ['UK 11', '45', '12', '29.5'],
+  ],
+}
+
+// Pick the right sizing for a product based on its name/category
+function getSizing(product) {
+  const name = (product?.name || '').toLowerCase()
+  const cat = product?.category || ''
+  if (/shoe|sneaker|boot|runner|trainer|footwear|sandal|heel/.test(name)) {
+    return { type: 'footwear', sizes: FOOTWEAR, def: 'UK 9', chart: FOOTWEAR_CHART }
+  }
+  if (cat === 'Clothing' || cat === 'Sports' || /shirt|tee|t-shirt|jacket|hoodie|dress|pant|jean|trouser|sweater|coat|kurta|top|denim/.test(name)) {
+    return { type: 'apparel', sizes: APPAREL, def: 'M', chart: APPAREL_CHART }
+  }
+  return { type: 'generic', sizes: ['One Size'], def: 'One Size', chart: null }
+}
 
 export default function ProductDetail() {
   const { id } = useParams()
@@ -13,6 +53,8 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [selectedSize, setSelectedSize] = useState(null)
+  const [showSizeGuide, setShowSizeGuide] = useState(false)
   const { addToCart } = useCart()
 
   useEffect(() => {
@@ -22,8 +64,13 @@ export default function ProductDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
+  // Default the size selection once the product loads
+  useEffect(() => {
+    if (product) setSelectedSize(getSizing(product).def)
+  }, [product])
+
   const handleAddToCart = () => {
-    addToCart(product, quantity)
+    addToCart({ ...product, selectedSize }, quantity)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -41,6 +88,8 @@ export default function ProductDetail() {
       <Link to="/products" style={{ color: 'var(--accent)', fontWeight: 600 }}>← Back to Products</Link>
     </div>
   )
+
+  const sizing = getSizing(product)
 
   return (
     <main style={{ padding: '40px 24px', minHeight: '80vh' }}>
@@ -82,6 +131,36 @@ export default function ProductDetail() {
             </div>
 
             <p style={{ color: 'var(--text2)', fontSize: 15, lineHeight: 1.7, marginBottom: 28 }}>{product.description}</p>
+
+            {/* Size selector */}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+                  {sizing.type === 'footwear' ? 'Select Size' : sizing.type === 'apparel' ? 'Select Size' : 'Size'}
+                  {selectedSize && <span style={{ color: 'var(--accent)', fontWeight: 700 }}> · {selectedSize}</span>}
+                </span>
+                <button onClick={() => setShowSizeGuide(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  <Ruler size={15} /> Size Guide
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {sizing.sizes.map(s => {
+                  const active = selectedSize === s
+                  return (
+                    <button key={s} onClick={() => setSelectedSize(s)} style={{
+                      minWidth: 52, padding: '10px 16px', borderRadius: 12,
+                      fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                      color: active ? '#fff' : 'var(--text)',
+                      background: active ? 'var(--aurora)' : 'var(--surface)',
+                      border: '1px solid ' + (active ? 'transparent' : 'var(--border)'),
+                      boxShadow: active ? 'var(--glow)' : 'none',
+                      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                      transition: 'var(--transition)',
+                    }}>{s}</button>
+                  )
+                })}
+              </div>
+            </div>
 
             {/* Quantity */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
@@ -137,6 +216,57 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Size Guide modal */}
+      {showSizeGuide && (
+        <div onClick={() => setShowSizeGuide(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface-solid)', border: '1px solid var(--border-2)', borderRadius: 24, padding: 28, width: '100%', maxWidth: 460, maxHeight: '90vh', overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><Ruler size={20} /> Size <span className="gradient-text">Guide</span></h2>
+              <button onClick={() => setShowSizeGuide(false)} aria-label="Close" style={{ padding: 8, borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer' }}><X size={18} /></button>
+            </div>
+            <p style={{ fontSize: 13.5, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 20 }}>
+              {sizing.type === 'footwear'
+                ? 'Measure your foot from heel to longest toe, then match the length below. If between sizes, pick the larger.'
+                : sizing.type === 'apparel'
+                ? 'Measurements are body measurements in inches. For a relaxed fit, size up.'
+                : 'This product comes in a standard one-size fit. See the description for exact dimensions.'}
+            </p>
+
+            {sizing.chart ? (
+              <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                  <thead>
+                    <tr style={{ background: 'var(--surface-2)' }}>
+                      {sizing.chart.head.map(h => (
+                        <th key={h} style={{ textAlign: 'left', padding: '11px 14px', fontWeight: 700, color: 'var(--text)', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sizing.chart.rows.map((row, ri) => {
+                      const isActive = row[0] === selectedSize
+                      return (
+                        <tr key={ri} style={{ background: isActive ? 'var(--accent-light)' : 'transparent' }}>
+                          {row.map((cell, ci) => (
+                            <td key={ci} style={{ padding: '11px 14px', borderBottom: ri < sizing.chart.rows.length - 1 ? '1px solid var(--border)' : 'none', color: ci === 0 ? (isActive ? 'var(--accent)' : 'var(--text)') : 'var(--text2)', fontWeight: ci === 0 ? 700 : 500 }}>{cell}</td>
+                          ))}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="glass" style={{ padding: 20, borderRadius: 14, textAlign: 'center', color: 'var(--text2)', fontSize: 14 }}>
+                📦 One size fits all — no sizing needed for this item.
+              </div>
+            )}
+
+            <button onClick={() => setShowSizeGuide(false)} style={{ width: '100%', marginTop: 22, padding: '13px', borderRadius: 14, border: 'none', background: 'var(--aurora)', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: 'var(--glow)' }}>Got it</button>
+          </div>
+        </div>
+      )}
 
       <style>{`@media(max-width:768px){main>div>div:last-child{grid-template-columns:1fr!important}}`}</style>
     </main>

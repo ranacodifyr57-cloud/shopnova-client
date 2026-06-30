@@ -37,7 +37,10 @@ export default function Cart() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: 'var(--text2)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>{item.category}</p>
-                  <h3 style={{ fontFamily: 'var(--font-head)', fontSize: 16, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>{item.name}</h3>
+                  <h3 style={{ fontFamily: 'var(--font-head)', fontSize: 16, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>{item.name}</h3>
+                  {item.selectedSize && item.selectedSize !== 'One Size' && (
+                    <span style={{ display: 'inline-block', marginBottom: 8, padding: '3px 10px', borderRadius: 999, background: 'var(--accent-light)', border: '1px solid rgba(255,122,26,0.3)', color: 'var(--accent)', fontSize: 12, fontWeight: 700 }}>Size: {item.selectedSize}</span>
+                  )}
                   <p className="gradient-text" style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 800 }}>Rs. {(item.price * item.quantity).toLocaleString()}</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>

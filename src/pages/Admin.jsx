@@ -238,6 +238,7 @@ export default function Admin() {
                   {o.items?.map((item, i) => (
                     <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '6px 10px', borderRadius: 8, background: 'var(--surface-2)', fontSize: 13 }}>
                       <span>{item.name}</span>
+                      {item.size && item.size !== 'One Size' && <span style={{ padding: '1px 7px', borderRadius: 999, background: 'var(--accent-light)', color: 'var(--accent)', fontSize: 11, fontWeight: 700 }}>{item.size}</span>}
                       <span style={{ color: 'var(--text2)' }}>x{item.quantity}</span>
                       <span style={{ fontWeight: 700, color: 'var(--accent)' }}>Rs. {(item.price * item.quantity).toLocaleString()}</span>
                     </div>

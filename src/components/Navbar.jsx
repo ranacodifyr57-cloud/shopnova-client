@@ -1,27 +1,57 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Menu, X, Search, User, LogOut, Sun, Moon, Sparkles } from 'lucide-react'
+import axios from 'axios'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { dummyProducts } from '../data/products'
 
+const API = 'https://shopnova-server.vercel.app'
 const navCategories = ['Electronics', 'Clothing', 'Home & Living', 'Beauty', 'Sports', 'Books']
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [allProducts, setAllProducts] = useState([])
+  const [showSug, setShowSug] = useState(false)
+  const fetchedRef = useRef(false)
+  const blurTimer = useRef(null)
   const { totalItems } = useCart()
   const { user, logout, isAdmin } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
+  // Lazily load the full catalog the first time the user uses search
+  const loadProducts = () => {
+    if (fetchedRef.current) return
+    fetchedRef.current = true
+    axios.get(`${API}/api/products`)
+      .then(r => {
+        const list = Array.isArray(r.data) ? r.data : []
+        setAllProducts(list.length ? list : dummyProducts)
+      })
+      .catch(() => setAllProducts(dummyProducts))
+  }
+
+  const q = search.trim().toLowerCase()
+  const suggestions = q
+    ? allProducts.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q)
+      ).slice(0, 6)
+    : []
+
   const handleSearch = e => {
     e.preventDefault()
     if (search.trim()) {
-      navigate(`/products?search=${search}`)
+      navigate(`/products?search=${encodeURIComponent(search.trim())}`)
       setSearch('')
+      setShowSug(false)
     }
   }
+
+  const pickSuggestion = () => { setSearch(''); setShowSug(false) }
 
   return (
     <header style={{
@@ -49,10 +79,13 @@ export default function Navbar() {
         </Link>
 
         {/* Search */}
-        <form onSubmit={handleSearch} style={{ display: 'flex', width: 340, marginLeft: 'auto' }} className="search-form">
+        <div className="search-form" style={{ position: 'relative', width: 340, marginLeft: 'auto' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%' }}>
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setShowSug(true) }}
+            onFocus={() => { loadProducts(); setShowSug(true) }}
+            onBlur={() => { blurTimer.current = setTimeout(() => setShowSug(false), 150) }}
             placeholder="Search products..."
             style={{
               flex: 1, padding: '11px 16px',
@@ -72,6 +105,37 @@ export default function Navbar() {
             <Search size={18} />
           </button>
         </form>
+
+        {/* Live suggestions */}
+        {showSug && q && (
+          <div onMouseDown={e => e.preventDefault()} style={{
+            position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 200,
+            background: 'var(--nav-solid)', border: '1px solid var(--border)', borderRadius: 14,
+            boxShadow: 'var(--shadow-lg)', overflow: 'hidden',
+            backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+          }}>
+            {suggestions.length > 0 ? suggestions.map(p => (
+              <Link key={p._id} to={`/products/${p._id}`} onClick={pickSuggestion} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderBottom: '1px solid var(--border)' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-light)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <div style={{ width: 40, height: 40, borderRadius: 9, overflow: 'hidden', background: 'var(--bg2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {p.images?.[0] ? <img src={p.images[0]} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 18 }}>📦</span>}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--text2)' }}>{p.category}</div>
+                </div>
+                <span className="gradient-text" style={{ fontSize: 13, fontWeight: 800, flexShrink: 0 }}>Rs. {p.price?.toLocaleString()}</span>
+              </Link>
+            )) : (
+              <div style={{ padding: '14px', fontSize: 13, color: 'var(--text2)', textAlign: 'center' }}>No products match "{search.trim()}"</div>
+            )}
+            <button onClick={handleSearch} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '11px', background: 'var(--accent-light)', color: 'var(--accent)', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer' }}>
+              <Search size={15} /> See all results for "{search.trim()}"
+            </button>
+          </div>
+        )}
+        </div>
 
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }} className="nav-actions">

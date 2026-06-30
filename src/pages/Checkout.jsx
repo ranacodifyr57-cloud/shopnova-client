@@ -22,7 +22,7 @@ export default function Checkout() {
     try {
       const { data } = await axios.post(`${API}/api/orders`, {
         customerInfo: form,
-        items: cart.map(i => ({ product: i._id, name: i.name, price: i.price, quantity: i.quantity, image: i.images?.[0] })),
+        items: cart.map(i => ({ product: i._id, name: i.name, price: i.price, quantity: i.quantity, size: i.selectedSize, image: i.images?.[0] })),
         totalAmount: total,
         paymentMethod: 'Cash on Delivery',
       })
@@ -133,7 +133,7 @@ export default function Checkout() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{item.name}</p>
-                  <p style={{ fontSize: 12, color: 'var(--text2)' }}>x{item.quantity}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text2)' }}>x{item.quantity}{item.selectedSize && item.selectedSize !== 'One Size' ? ` · Size ${item.selectedSize}` : ''}</p>
                 </div>
                 <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>Rs. {(item.price * item.quantity).toLocaleString()}</p>
               </div>
